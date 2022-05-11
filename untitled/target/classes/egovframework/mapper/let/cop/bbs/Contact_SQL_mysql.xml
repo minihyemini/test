@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ContactDAO">
+
+
+    <resultMap id="contactList" type="egovframework.let.cop.bbs.service.ContactVO">
+        <result property="contactUniqId" column="CONTACT_UNIQ_ID"/>
+        <result property="contactEmail" column="CONTACT_EMAIL" />
+        <result property="contactName" column="CONTACT_NAME"/>
+        <result property="contactTitle" column="CONTACT_TITLE" />
+        <result property="contactContents" column="CONTACT_CONTENTS" />
+        <result property="contactDate" column="CONTACT_DATE" />
+        <result property="contactPhone" column="CONTACT_PHONE" />
+        <result property="contactIndexNumber" column="CONTACT_INDEX_NUMBER" />
+        <result property="sortOrdr" column="SORT_ORDR" />
+    </resultMap>
+
+    <resultMap id="contactDetail" type="egovframework.let.cop.bbs.service.ContactVO">
+        <result property="contactUniqId" column="CONTACT_UNIQ_ID"/>
+        <result property="contactEmail" column="CONTACT_EMAIL" />
+        <result property="contactName" column="CONTACT_NAME"/>
+        <result property="contactTitle" column="CONTACT_TITLE" />
+        <result property="contactContents" column="CONTACT_CONTENTS" />
+        <result property="contactDate" column="CONTACT_DATE" />
+        <result property="contactPhone" column="CONTACT_PHONE" />
+        <result property="contactIndexNumber" column="CONTACT_INDEX_NUMBER" />
+        <result property="sortOrdr" column="SORT_ORDR" />
+    </resultMap>
+
+    <select id="selectMaxIndexNumber" resultType="java.lang.Integer">
+
+        SELECT IFNULL(MAX(CONTACT_INDEX_NUMBER),0)+1 AS CONTACT_INDEX_NUMBER  FROM LETTNCONTACT
+
+    </select>
+
+
+    <select id="selectMaxContactId" resultType="java.lang.Long">
+
+        SELECT IFNULL(MAX(CONTACT_UNIQ_ID),0)+1 AS CONTACT_UNIQ_ID  FROM LETTNCONTACT
+
+    </select>
+
+    <!-- 게시물 숫자 구하기 -->
+    <select id="selectContactListCount" parameterType="egovframework.let.cop.bbs.service.ContactVO" resultType="java.lang.Integer">
+        SELECT
+            COUNT(CONTACT_UNIQ_ID) as cnt
+        FROM
+            LETTNCONTACT
+    </select>
+
+    <select id="selectContactListForSort" parameterType="egovframework.let.cop.bbs.service.Contact" >
+
+        SELECT
+            a.CONTACT_UNIQ_ID
+        FROM
+            LETTNCONTACT a
+        WHERE
+            a.CONTACT_UNIQ_ID = #{contactUniqId}
+        ORDER BY  a.CONTACT_INDEX_NUMBER ASC
+
+    </select>
+
+
+
+
+    <select id="selectContactList" resultMap="contactList" parameterType="egovframework.let.cop.bbs.service.ContactVO">
+        SELECT
+                 CONTACT_UNIQ_ID
+             ,   CONTACT_EMAIL
+             ,   CONTACT_NAME
+             ,   CONTACT_TITLE
+             ,   CONTACT_CONTENTS
+             ,   CONTACT_PHONE
+             ,   DATE_FORMAT(CONTACT_DATE, '%Y-%m-%d') as CONTACT_DATE
+             ,   SORT_ORDR
+        FROM
+            LETTNCONTACT
+
+        WHERE 1=1
+        <if test="searchCnd == 0">AND
+            CONTACT_TITLE LIKE CONCAT ('%', #{searchWrd},'%')
+        </if>
+        <if test="searchCnd == 1">AND
+            CONTACT_CONTENTS LIKE CONCAT ('%', #{searchWrd},'%')
+        </if>
+        <if test="searchCnd == 2">AND
+            CONTACT_NAME LIKE CONCAT ('%', #{searchWrd},'%')
+        </if>
+        ORDER BY SORT_ORDR DESC, CONTACT_UNIQ_ID ASC
+
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+
+    <select id="selectContactDetail" parameterType="egovframework.let.cop.bbs.service.ContactVO" resultMap="contactDetail">
+        SELECT
+                 CONTACT_UNIQ_ID
+             ,   CONTACT_EMAIL
+             ,   CONTACT_NAME
+             ,   CONTACT_TITLE
+             ,   CONTACT_CONTENTS
+             ,   CONTACT_PHONE
+             ,   CONTACT_DATE
+             ,   SORT_ORDR
+        FROM
+            LETTNCONTACT
+        WHERE
+            CONTACT_UNIQ_ID = #{contactUniqId}
+    </select>
+
+    <insert id="insertContact" parameterType="egovframework.let.cop.bbs.service.ContactVO">
+
+        <selectKey keyProperty="contactIndexNumber" resultType="java.lang.Integer" order="BEFORE">
+            SELECT IFNULL(MAX(SORT_ORDR),0)+1 AS CONTACT_INDEX_NUMBER  FROM LETTNCONTACT
+        </selectKey>
+
+        INSERT INTO LETTNCONTACT
+        (
+            CONTACT_UNIQ_ID
+        ,   CONTACT_EMAIL
+        ,   CONTACT_NAME
+        ,   CONTACT_TITLE
+        ,   CONTACT_CONTENTS
+        ,   CONTACT_PHONE
+        ,   CONTACT_DATE
+        ,   SORT_ORDR
+        ,   CONTACT_INDEX_NUMBER
+        )
+        VALUES
+        (
+            #{contactUniqId}
+        ,   #{contactEmail}
+        ,   #{contactName}
+        ,   #{contactTitle}
+        ,   #{contactContents}
+        ,   #{contactPhone}
+        ,   NOW()
+        ,   #{contactIndexNumber}
+        ,   #{contactIndexNumber}
+        )
+    </insert>
+    <delete id="deleteContact" >
+        DELETE
+        FROM
+            LETTNCONTACT
+        WHERE
+            CONTACT_UNIQ_ID = #{contactUniqId}
+    </delete>
+</mapper>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PagingDAO">
+
+
+    <select id="selectListWithPaging" parameterType="egovframework.let.cop.bbs.service.BoardVO">
+        <![CDATA[
+        select
+            NTT_ID, NTT_SJ, NTT_CN, NTCR_NM, FRST_REGIST_PNTTM
+        FROM
+        (
+            SELECT
+            NTT_ID, BBS_ID, NTT_SJ, NTT_CN, NTCR_NM, FRST_REGIST_PNTTM
+            FROM
+                LETTNBBS
+            WHERE NTT_ID <= #{firstIndex} * #{recordCountPerPage}
+        )
+        WHERE NTT_ID > #{firstIndex - 1}* #{recordCountPerPage}
+        ]]>
+    </select>
+</mapper>
